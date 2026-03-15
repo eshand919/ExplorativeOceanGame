@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ocean Finder</title>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            font-family: Garamond, Georgia, "Times New Roman", Times, serif;
+            background: #f0f4f8;
+            min-height: 100vh;
+            color: #1a1a2e;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            transition: background-image 0.8s ease-in-out;
+            padding: 2rem 3rem;
+        }
+
+        body.no-ocean {
+            background-image: none;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            background: rgba(26, 26, 46, 0.72);
+            backdrop-filter: blur(8px);
+            padding: 1.8rem 3rem;
+            border-radius: 16px 16px 0 0;
+            border-bottom: none;
+            margin-bottom: 0;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 0.6rem;
+            color: white;
+        }
+
+        header p {
+            color: #e0e0ff;
+            font-size: 1.25rem;
+        }
+
+        .main-container {
+            display: flex;
+            gap: 2.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+
+        .left-column {
+            flex: 1;
+            min-width: 480px;
+            max-width: 580px;
+        }
+
+        .right-column {
+            flex: 1;
+            min-width: 480px;
+            max-width: 580px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.2rem;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        }
+
+        .presets {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 1.6rem;
+        }
+
+        .preset {
+            padding: 11px 14px;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .preset:hover {
+            background: #f1f5f9;
+        }
+
+        .inputs {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 1.2rem;
+        }
+
+        .input-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-size: 0.9rem;
+            color: #64748b;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .nav-bar {
+            display: flex;
+            max-width: 1000px;
+            margin: 0 auto 2.5rem;
+            background: rgba(15, 15, 35, 0.85);
+            backdrop-filter: blur(8px);
+            border-radius: 0 0 16px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: none;
+            overflow: hidden;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 0.85rem 1.5rem;
+            background: transparent;
+            border: none;
+            color: rgba(200, 210, 255, 0.65);
+            font-family: Garamond, Georgia, "Times New Roman", Times, serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            letter-spacing: 0.04em;
+            transition: background 0.2s, color 0.2s;
+            position: relative;
+        }
+
+        .nav-tab:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: #c7d7ff;
+        }
+
+        .nav-tab.active {
+            background: rgba(59, 130, 246, 0.22);
+            color: #ffffff;
+        }
+
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 10%;
+            width: 80%;
+            height: 3px;
+            background: #3b82f6;
+            border-radius: 2px 2px 0 0;
+        }
+
+        .nav-tab+.nav-tab {
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .about-intro {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .about-intro h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+            margin-bottom: 0.6rem;
+        }
+
+        .about-intro p {
+            font-size: 1.2rem;
+            color: #c7d7ff;
+            text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .member-card {
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 22px;
+            padding: 2.4rem 2rem;
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .member-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #1d4ed8, #3b82f6, #60a5fa);
+        }
+
+        .member-name {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 0.3rem;
+        }
+
+        .member-role {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #3b82f6;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 1.2rem;
+        }
+
+        .member-divider {
+            width: 40px;
+            height: 2px;
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            margin: 0 auto 1.2rem;
+            border-radius: 2px;
+        }
+
+        .member-bio {
+            font-size: 1.05rem;
+            line-height: 1.65;
+            color: #475569;
+        }
+
+        input[type="number"] {
+            padding: 13px 16px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1.15rem;
+            background: #f8fafc;
+            color: #1a1a2e;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="number"]:focus {
+            border-color: #3b82f6;
+            background: white;
+        }
+
+        .error {
+            color: #ef4444;
+            font-size: 0.95rem;
+            margin-top: 0.4rem;
+            display: none;
+        }
+
+        .find-btn {
+            width: 100%;
+            padding: 15px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .find-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .find-btn:active {
+            transform: scale(0.98);
+        }
+
+        #result {
+            display: none;
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(226, 232, 240, 0.85);
+            border-radius: 20px;
+            padding: 2.2rem;
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+        }
+
+        .winner-box {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 1.6rem;
+            border-radius: 16px;
+            margin-bottom: 1.6rem;
+            border: 2px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .winner-icon {
+            font-size: 3.5rem;
+        }
+
+        .winner-label {
+            font-size: 1rem;
+            color: #64748b;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .winner-name {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin: 6px 0;
+        }
+
+        .winner-dist {
+            color: #475569;
+            font-size: 1.15rem;
+        }
+
+        .all-label {
+            font-size: 1rem;
+            color: #94a3b8;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 14px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .dist-card {
+            padding: 16px 18px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .dist-card.top {
+            border-color: #93c5fd;
+            background: #eff6ff;
+        }
+
+        .dist-card-name {
+            font-size: 1rem;
+            color: #64748b;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .dist-card-val {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e3a5f;
+        }
+
+        .extra-info-container {
+            display: flex;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.9s ease-out;
+        }
+
+        .extra-info-container.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .info-card {
+            flex: 1;
+            min-width: 220px;
+            background: linear-gradient(135deg, #f8fafc, #eef2f6);
+            border-radius: 16px;
+            padding: 1.4rem 1.6rem;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .info-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+        }
+
+        .info-card h4 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 0.9rem;
+            text-align: center;
+            letter-spacing: 0.4px;
+        }
+
+        .info-card p {
+            font-size: 1.02rem;
+            line-height: 1.55;
+            color: #334155;
+        }
+
+        .map-section {
+            margin-bottom: 2rem;
+            background: white;
+            backdrop-filter: blur(8px);
+            border-radius: 14px;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .map-label {
+            padding-left: 10px;
+            padding-top: 10px;
+            font-size: 1rem;
+            color: black;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.8rem;
+        }
+
+        .map-hint {
+            padding-left: 10px;
+            font-size: 1.05rem;
+            color: black;
+            margin-bottom: 1.2rem;
+            line-height: 1.5;
+        }
+
+        .map-instructions {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            border-radius: 16px;
+            padding: 1.4rem 1.8rem;
+            margin-bottom: 1.4rem;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        #map {
+            width: 100%;
+            height: 460px;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        footer {
+            margin-top: 4rem;
+            font-size: 1rem;
+            color: #94a3b8;
+            text-align: center;
+            font-weight: 500;
+            padding-bottom: 2rem;
+        }
+
+        .solutions-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.8rem 2rem;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+            margin-top: 1.6rem;
+            /* space above from other cards */
+            min-height: 520px;
+            /* makes it noticeably taller / vertical */
+            flex-basis: 100%;
+            /* takes full width in the flex container */
+            max-width: 100%;
+        }
+
+        .solutions-card h4 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #1e40af;
+            margin-bottom: 1.2rem;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        .solutions-card p {
+            font-size: 1.05rem;
+            line-height: 1.65;
+            color: #334155;
+            margin-bottom: 1.1rem;
+        }
+
+        .solutions-card ul {
+            padding-left: 1.4rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .solutions-card li {
+            margin-bottom: 0.6rem;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body class="no-ocean">
+
+    <header>
+        <h1>🌊 Explorative Ocean Game</h1>
+        <p>Enter your coordinates to find your nearest ocean</p>
+    </header>
+    <nav class="nav-bar">
+        <button class="nav-tab active" onclick="switchTab('home', this)">🌊 Ocean Finder</button>
+        <button class="nav-tab" onclick="switchTab('about', this)">🤿 Learn About Me</button>
+    </nav>
+
+    <div id="page-home" class="page active">
+        <div class="main-container">
+            <div class="left-column">
+                <div class="map-section">
+                    <div class="map-label">Click anywhere on the map</div>
+                    <p class="map-hint">Drop a pin by clicking the map or select one of the preset locations below, then
+                        click "Find Nearest Ocean"</p>
+                    <div id="map"></div>
+                </div>
+
+                <div class="card">
+                    <div class="presets">
+                        <button class="preset" onclick="preset(35.6762, 139.6503)">📍 Tokyo, Japan</button>
+                        <button class="preset" onclick="preset(40.7128, -74.0060)">📍 New York, USA</button>
+                        <button class="preset" onclick="preset(-33.8688, 151.2093)">📍 Sydney, Australia</button>
+                        <button class="preset" onclick="preset(51.5074, -0.1278)">📍 London, UK</button>
+                        <button class="preset" onclick="preset(55.7558, 37.6173)">📍 Moscow, Russia</button>
+                        <button class="preset" onclick="preset(-22.9068, -43.1729)">📍 Rio de Janeiro</button>
+                    </div>
+
+                    <div class="inputs">
+                        <div class="input-group">
+                            <label>Latitude</label>
+                            <input type="number" id="lat" placeholder="-90 to 90" min="-90" max="90" step="any" />
+                        </div>
+                        <div class="input-group">
+                            <label>Longitude</label>
+                            <input type="number" id="lon" placeholder="-180 to 180" min="-180" max="180" step="any" />
+                        </div>
+                    </div>
+
+                    <p class="error" id="err">Please enter valid latitude and longitude values.</p>
+
+                    <button class="find-btn" onclick="search()">Find Nearest Ocean</button>
+                </div>
+            </div>
+
+            <div class="right-column">
+                <div class="card" id="result">
+                    <div class="winner-box" id="winnerBox">
+                        <div class="winner-icon" id="winnerIcon"></div>
+                        <div>
+                            <div class="winner-label">Nearest ocean</div>
+                            <div class="winner-name" id="winnerName"></div>
+                            <div class="winner-dist" id="winnerDist"></div>
+                        </div>
+                    </div>
+                    <div class="all-label">All oceans by distance</div>
+                    <div class="grid" id="grid"></div>
+
+                    <div class="extra-info-container" id="extraInfo">
+                        <div class="info-card">
+                            <h4>Interesting Fun Facts</h4>
+                            <p id="fun-fact"></p>
+                        </div>
+                        <div class="info-card">
+                            <h4>Temperatures</h4>
+                            <p id="temps"></p>
+                        </div>
+                        <div class="info-card">
+                            <h4>Climate Crisis</h4>
+                            <p id="climate-crisis"></p>
+                        </div>
+                        <div class="info-card">
+                            <h4>Common Animals</h4>
+                            <p id="common-animals"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="solutions-card" id="solutionsCard" style="display: none;">
+                    <h4>Solutions to Plastic Pollution</h4>
+                    <div id="solutionsContent"></div>
+                </div>
+                <div class="card" id="plasticCalculator" style="display: none; margin-top: 2rem;">
+                    <h3 style="text-align: center; margin-bottom: 1.4rem; color: #2563eb; font-size: 1.4rem;">
+                        What's your plastic footprint?
+                    </h3>
+                    <p style="text-align: center; color: #475569; margin-bottom: 1.2rem;">
+                        How many plastic water bottles do you use per week?
+                    </p>
+
+                    <div style="display: flex; justify-content: center; margin-bottom: 1.2rem;">
+                        <input type="number" id="bottlesPerWeek" min="0" placeholder="e.g. 5"
+                            style="width: 120px; padding: 12px; font-size: 1.2rem; text-align: center; border: 1.5px solid #e2e8f0; border-radius: 10px; background: #f8fafc;" />
+                    </div>
+
+                    <button onclick="calculatePlastic()"
+                        style="width: 100%; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 12px; font-size: 1.15rem; font-weight: 600; cursor: pointer; transition: background 0.2s;">
+                        Calculate
+                    </button>
+
+                    <p id="plasticResult"
+                        style="text-align: center; font-size: 1.3rem; font-weight: 700; color: #1e293b; margin-top: 1.6rem; min-height: 1.5em;">
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="page-about" class="page">
+        <div class="about-intro">
+            <div
+                style="background: rgba(26, 26, 46, 0.72); backdrop-filter: blur(8px); padding: 1.8rem 3rem; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.12); max-width: 1000px; margin: 0 auto 3rem;">
+                <h2 style="font-size: 2.2rem; font-weight: 700; color: white; margin-bottom: 0.6rem;">Meet the Team</h2>
+                <p style="font-size: 1.2rem; color: #e0e0ff;">The people behind the Explorative Ocean Game</p>
+            </div>
+        </div>
+        <div class="team-grid">
+            <div class="member-card">
+                <div class="member-name">Eshan Dontamsetti</div>
+                <div class="member-role">User Interface/Design & Programming</div>
+                <div class="member-divider"></div>
+            </div>
+            <div class="member-card">
+                <div class="member-name">Abhinav Patalori</div>
+                <div class="member-role">Media Research & Programming</div>
+                <div class="member-divider"></div>
+            </div>
+            <div class="member-card">
+                <div class="member-name">Harshini Bulusu</div>
+                <div class="member-role">Media Research, Ideation & Programming</div>
+                <div class="member-divider"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const oceanBgs = {
+            "Pacific Ocean": "bgs/pacific.png",
+            "Atlantic Ocean": "bgs/atlantic.png",
+            "Indian Ocean": "bgs/indian.png",
+            "Arctic Ocean": "bgs/artic.png",
+            "Southern Ocean": "bgs/southern.jpg"
+        };
+
+        const oceanInfo = {
+            "Pacific Ocean": {
+                fact: "<ul><li>World's largest and deepest ocean</li><li>Contains the 11,000 feet deep Mariana Trench</li><li>Home to over 25,000 islands</li></ul>",
+                temps: "25°F to 86°F",
+                climate: "The Pacific Ocean holds 120,000 metric tonnes of plastic, consisting of 45% of the world's oceans plastic.<br><br><strong>Major Impacted Shorelines:</strong> Japan, Philippines, Indonesia, California, Hawaii, Pacific Islands",
+                animals: "<ul><li>Albatross</li><li>Galapagos Penguins</li></ul>"
+            },
+            "Atlantic Ocean": {
+                fact: "<ul><li>The Atlantic Ocean is the saltiest ocean out of the 5 and has a salinity between 33–37 parts per thousand.</li><li>The Atlantic also happens to be the youngest ocean, created long after the Pacific, Arctic and Indian oceans.</li><li>The Puerto Rico Trench is located in the North Atlantic and is by far the deepest trench in the Atlantic Ocean, reaching depths of 8,605 metres.</li></ul>",
+                temps: "28°F to 86°F",
+                climate: "The Atlantic Ocean holds 105,000 metric tonnes of plastic, consisting of 30% of the world's oceans plastic.<br><br><strong>Major Impacted Shorelines:</strong> United States East Coast, Caribbean Islands, Brazil, United Kingdom, Spain, West Africa",
+                animals: "<ul><li>Humpback whales</li><li>Bottlenose dolphins</li><li>Sea lions</li><li>Green sea turtles</li><li>Starfish</li></ul>"
+            },
+            "Indian Ocean": {
+                fact: "<ul><li>The latin name is Oceanus Orientalis Indicus or Eastern Indian Ocean.</li><li>The northern part of the ocean covers the most important transport route for oil, consisting of 40% of the world's offshore oil production.</li><li>Northern currents reverse during monsoon season, in accordance to the equator.</li></ul>",
+                temps: "72°F to 82°F",
+                climate: "The Indian Ocean holds 65,000 metric tonnes of plastic, consisting of 19% of the world's oceans plastic.<br><br><strong>Major Impacted Shorelines:</strong> India, Bangladesh, Pakistan, Sri Lanka, East Africa, Western Australia",
+                animals: "<ul><li>Sea cows</li><li>Turtles</li><li>Seals</li><li>Dugongs</li></ul>"
+            },
+            "Arctic Ocean": {
+                fact: "<ul><li>The ocean is the smallest on earth, only covering 3% of the earth's surface.</li><li>Ice-breaker ships often escort other ships when passing through dense ice packs.</li><li>The Inuit, Yupik, Aleut, and Saami people are the only native inhabitants of the region.</li></ul>",
+                temps: "28°F to 30°F",
+                climate: "The Arctic Ocean holds 15,000 metric tonnes of plastic, consisting of 4% of the world's oceans plastic.<br><br><strong>Major Impacted Shorelines:</strong> Alaska, Northern Canada, Greenland, Norway, Siberian Russia",
+                animals: "<ul><li>Walruses</li><li>Whales</li><li>Polar bears</li><li>Seals</li></ul>"
+            },
+            "Southern Ocean": {
+                fact: "<ul><li>The first explorers who sailed through the cold waters were Bartolomeo Diaz and Ferdinand Magellan.</li><li>Many icebergs inhabit the area, with some measuring over 1,000 feet in diameter.</li><li>The Southern Ocean roughly covers 6% of the entire Earth's surface.</li></ul>",
+                temps: "28°F to 50°F",
+                climate: "The Southern Ocean holds 10,000 metric tonnes of plastic, consisting of 3% of the world's oceans plastic.<br><br><strong>Major Impacted Shorelines:</strong> Antarctic Peninsula, Southern Chile, South Georgia Island, Southern New Zealand",
+                animals: "<ul><li>Emperor Penguins</li><li>Blue whales</li><li>Fur seals</li><li>Giant squid</li><li>Antarctic krill</li></ul>"
+            }
+        };
+
+        const OCEANS = [
+            {
+                name: "Pacific Ocean", emoji: "🌊", color: "#dbeafe",
+                points: [[0, -150], [30, -170], [-30, -120], [20, -130], [-20, -160], [0, 180], [45, -160], [-45, -140], [10, 145], [-10, 160], [50, 150], [-50, -100]]
+            },
+            {
+                name: "Atlantic Ocean", emoji: "🌊", color: "#dcfce7",
+                points: [[0, -30], [30, -40], [-30, -20], [15, -50], [-15, -10], [45, -30], [-45, -25], [0, -25], [60, -20], [-60, -30], [20, -60], [-20, -40]]
+            },
+            {
+                name: "Indian Ocean", emoji: "🌊", color: "#fef9c3",
+                points: [[-20, 80], [10, 70], [-40, 90], [0, 60], [-30, 100], [20, 85], [-10, 75], [-35, 70], [15, 55], [-25, 110], [5, 80], [-50, 80]]
+            },
+            {
+                name: "Arctic Ocean", emoji: "❄️", color: "#ede9fe",
+                points: [[85, 0], [80, 60], [80, -60], [82, 120], [82, -120], [90, 0], [78, 30], [78, -30], [75, 90], [75, -90], [83, 0], [80, 180]]
+            },
+            {
+                name: "Southern Ocean", emoji: "🧊", color: "#fce7f3",
+                points: [[-70, 0], [-65, 60], [-65, -60], [-68, 120], [-68, -120], [-72, 180], [-75, 0], [-60, 40], [-60, -40], [-60, 100], [-60, -100], [-70, 80]]
+            }
+        ];
+
+        function toRad(d) { return d * Math.PI / 180; }
+
+        function haversine(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = toRad(lat2 - lat1);
+            const dLon = toRad(lon2 - lon1);
+            const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
+
+        function switchTab(page, btn) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('page-' + page).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function findOceans(lat, lon) {
+            return OCEANS.map(o => ({
+                ...o,
+                distance_km: Math.round(Math.min(...o.points.map(([la, lo]) => haversine(lat, lon, la, lo))))
+            })).sort((a, b) => a.distance_km - b.distance_km);
+        }
+
+        function showResults(lat, lon) {
+            const data = findOceans(lat, lon);
+            const nearest = data[0];
+
+            // Winner box
+            document.getElementById('winnerIcon').textContent = nearest.emoji;
+            document.getElementById('winnerName').textContent = nearest.name;
+            document.getElementById('winnerDist').textContent = '~' + nearest.distance_km.toLocaleString() + ' km away';
+            document.getElementById('winnerBox').style.background = nearest.color;
+
+            // Distance grid
+            document.getElementById('grid').innerHTML = data.map((o, i) =>
+                `<div class="dist-card ${i === 0 ? 'top' : ''}">
+                <div class="dist-card-name">${o.emoji} ${o.name}</div>
+                <div class="dist-card-val">${o.distance_km.toLocaleString()} km</div>
+                </div>`
+            ).join('');
+
+            // Change background
+            document.body.style.backgroundImage = `url('${oceanBgs[nearest.name]}')`;
+            document.body.classList.remove('no-ocean');
+
+            // FILL THE FOUR CARDS — this was missing or incomplete
+            const info = oceanInfo[nearest.name];
+            if (info) {
+                document.getElementById('fun-fact').innerHTML = info.fact;
+                document.getElementById('temps').innerHTML = info.temps;
+                document.getElementById('climate-crisis').innerHTML = info.climate;
+                document.getElementById('common-animals').innerHTML = info.animals;
+            }
+
+            // Populate ocean-specific solutions text
+            const solutions = {
+                "Pacific Ocean": `
+                    <p><strong>Solutions:</strong></p>
+                    <ul>
+                        <li>Ghost-net buyback programs for fishing gear</li>
+                        <li>Biodegradable fishing nets adoption</li>
+                        <li>River interception systems in major Asian rivers</li>
+                        <li>Regional plastic bans for foam packaging</li>
+                    </ul>
+                    <p><strong>What can you do?</strong></p>
+                    <ul>
+                        <li>In many Pacific coastal regions such as Japan, Philippines, and Indonesia, convenience stores and street vendors often sell drinks in single-use plastic bottles. Carry a reusable water bottle or thermos and refill it at home, restaurants, or public refill stations to reduce plastic waste.</li>
+                        <li>In island communities such as Hawaii and other Pacific Islands, support local refill stations that encourage people to reuse containers instead of buying new plastic bottles.</li>
+                        <li>Buy beverages in returnable glass bottles, which are commonly reused in many local markets and help reduce plastic entering the ocean.</li>
+                    </ul>
+                `,
+                "Atlantic Ocean": `
+                    <p><strong>Solutions:</strong></p>
+                    <ul>
+                        <li>Industrial pellet containment regulations</li>
+                        <li>Advanced wastewater filtration for microfibers</li>
+                        <li>Port-based plastic recovery systems</li>
+                        <li>Extended Producer Responsibility (EPR) policies</li>
+                    </ul>
+                    <p><strong>What can you do?</strong></p>
+                    <ul>
+                        <li>Along the Atlantic coasts (including the United States East Coast, Caribbean, Brazil, and parts of West Africa) people often purchase bottled drinks while traveling, at beaches, or from street vendors. Bring a reusable insulated bottle when visiting beaches or outdoor markets and refill it at water fountains or restaurants to reduce plastic bottle waste.</li>
+                        <li>In places where large family water jugs or refillable containers are common (such as in Brazil and many Caribbean communities), choose refill deliveries instead of buying single-use plastic bottles.</li>
+                        <li>Support local refill stations or bulk water systems, which help limit plastic waste entering the Atlantic Ocean.</li>
+                    </ul>
+                `,
+                "Indian Ocean": `
+                    <p><strong>Solutions:</strong></p>
+                    <ul>
+                        <li>River plastic traps in major rivers (Ganges, Indus)</li>
+                        <li>Low-cost waste collection infrastructure</li>
+                        <li>Reusable packaging systems for markets</li>
+                        <li>Deposit systems for plastic bottles</li>
+                    </ul>
+                    <p><strong>What can you do?</strong></p>
+                    <ul>
+                        <li>Bring reusable food containers when buying street food in countries like India or Sri Lanka where takeout containers are often plastic.</li>
+                        <li>Use cloth shopping bags, a practice already common in many markets across Kenya and Tanzania after plastic bag bans.</li>
+                        <li>Separate and recycle waste to prevent plastics from entering rivers that drain into the Indian Ocean.</li>
+                        <li>Support refill stores where household products like soap or detergent can be purchased without new plastic packaging.</li>
+                        <li>Avoid releasing balloons or lanterns, which frequently end up as marine debris harming sea turtles and fish.</li>
+                    </ul>
+                `,
+                "Arctic Ocean": `
+                    <p><strong>Solutions:</strong></p>
+                    <ul>
+                        <li>Microplastic filtration on washing machines</li>
+                        <li>Strict Arctic shipping waste regulations</li>
+                        <li>Fishing gear tracking systems</li>
+                    </ul>
+                    <p><strong>What can you do?</strong></p>
+                    <ul>
+                        <li>Reduce plastic packaging when buying food, since many Arctic communities rely on shipped goods that create excess waste.</li>
+                        <li>Participate in community waste-reduction programs in northern areas such as Alaska and Canada.</li>
+                        <li>Choose natural fiber clothing (cotton, wool) to reduce microplastic fibers entering waterways.</li>
+                        <li>Support policies that limit Arctic drilling and pollution, helping protect fragile marine ecosystems.</li>
+                        <li>Dispose of fishing gear properly when fishing in northern waters to prevent ghost nets that can trap animals like polar bears or seals.</li>
+                    </ul>
+                `,
+                "Southern Ocean": `
+                    <p><strong>Solutions:</strong></p>
+                    <ul>
+                        <li>Closed-loop waste systems on vessels</li>
+                        <li>Mandatory gear recovery tracking</li>
+                        <li>Antarctic marine debris monitoring programs</li>
+                    </ul>
+                    <p><strong>What can you do?</strong></p>
+                    <ul>
+                        <li>Choose sustainable seafood certified by organizations like the Marine Stewardship Council to reduce demand for fishing practices that leave ghost nets in the ocean.</li>
+                        <li>Participate in coastal cleanups along southern coasts of countries like Australia, New Zealand, and Chile where debris can be carried by currents toward Antarctic waters.</li>
+                        <li>Support sustainable tourism companies when visiting Antarctic or sub-Antarctic regions that follow strict waste-management policies.</li>
+                        <li>Reduce fast-fashion purchases, since synthetic clothing sheds microfibers that can eventually reach polar oceans.</li>
+                    </ul>
+                `
+            };
+
+            const nearestName = nearest.name;
+            document.getElementById('solutionsContent').innerHTML = solutions[nearestName] || "<p>Solutions focus on global reduction of single-use plastics, improved waste management, and international treaties to protect our oceans.</p>";
+
+            // Show result container
+            const resultEl = document.getElementById('result');
+            resultEl.style.display = 'block';
+            document.getElementById('plasticCalculator').style.display = 'block';
+            document.getElementById('solutionsCard').style.display = 'block';
+
+
+            // Trigger slide-up animation for the four cards
+            setTimeout(() => {
+                document.getElementById('extraInfo').classList.add('visible');
+            }, 400);
+        }
+
+        function preset(lat, lon) {
+            document.getElementById('lat').value = lat;
+            document.getElementById('lon').value = lon;
+            document.getElementById('err').style.display = 'none';
+
+            if (window.mapMarker && window.gmap) {
+                window.mapMarker.setPosition({ lat, lng: lon });
+                window.mapMarker.setVisible(true);
+                window.gmap.panTo({ lat, lng: lon });
+            }
+        }
+
+        function search() {
+            const lat = parseFloat(document.getElementById('lat').value);
+            const lon = parseFloat(document.getElementById('lon').value);
+            const err = document.getElementById('err');
+
+            if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+                err.style.display = 'block';
+                document.getElementById('result').style.display = 'none';
+                document.getElementById('plasticCalculator').style.display = 'none';
+                document.getElementById('plasticResult').textContent = '';
+                document.getElementById('extraInfo').classList.remove('visible');
+                document.getElementById('solutionsCard').style.display = 'none';
+                document.getElementById('solutionsContent').innerHTML = '';
+                return;
+            }
+
+            err.style.display = 'none';
+
+            if (window.mapMarker && window.gmap) {
+                window.mapMarker.setPosition({ lat, lng: lon });
+                window.gmap.panTo({ lat, lng: lon });
+            }
+
+            showResults(lat, lon);
+        }
+
+        function calculatePlastic() {
+            const input = document.getElementById('bottlesPerWeek');
+            const resultEl = document.getElementById('plasticResult');
+
+            const bottlesPerWeek = parseInt(input.value, 10);
+
+            if (isNaN(bottlesPerWeek) || bottlesPerWeek < 0) {
+                resultEl.textContent = "Please enter a valid number ≥ 0";
+                resultEl.style.color = "#ef4444";
+                return;
+            }
+
+            const bottleWeightKg = 0.018;
+            const weeksPerYear = 52;
+
+            const annualKg = bottlesPerWeek * weeksPerYear * bottleWeightKg;
+            const formattedKg = annualKg.toFixed(1);
+
+            resultEl.textContent = `≈ ${formattedKg} kg of plastic per year`;
+            resultEl.style.color = "#1e293b";
+        }
+
+        function initMap() {
+            window.gmap = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 20, lng: 0 },
+                zoom: 2,
+                mapTypeId: 'hybrid',
+                mapTypeControl: true,
+                streetViewControl: false,
+                fullscreenControl: true,
+            });
+
+            window.mapMarker = new google.maps.Marker({
+                map: window.gmap,
+                visible: false,
+                icon: {
+                    url: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png',
+                    anchor: new google.maps.Point(0, 32)
+                }
+            });
+
+            window.gmap.addListener('click', (e) => {
+                const lat = parseFloat(e.latLng.lat().toFixed(6));
+                const lon = parseFloat(e.latLng.lng().toFixed(6));
+
+                window.mapMarker.setPosition({ lat, lng: lon });
+                window.mapMarker.setVisible(true);
+
+                document.getElementById('lat').value = lat;
+                document.getElementById('lon').value = lon;
+                document.getElementById('err').style.display = 'none';
+            });
+
+            function calculatePlastic() {
+                const input = document.getElementById('bottlesPerWeek');
+                const resultEl = document.getElementById('plasticResult');
+
+                const bottlesPerWeek = parseInt(input.value, 10);
+
+                if (isNaN(bottlesPerWeek) || bottlesPerWeek < 0) {
+                    resultEl.textContent = "Please enter a valid number ≥ 0";
+                    resultEl.style.color = "#ef4444";
+                    return;
+                }
+
+                // Average empty plastic bottle weight: ~18 grams = 0.018 kg
+                const bottleWeightKg = 0.018;
+                const weeksPerYear = 52;
+
+                const annualKg = bottlesPerWeek * weeksPerYear * bottleWeightKg;
+                const formattedKg = annualKg.toFixed(1);
+
+                resultEl.textContent = `≈ ${formattedKg} kg of plastic per year`;
+                resultEl.style.color = "#1e293b";
+            }
+        }
+    </script>
+
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAv6mVVVDQPom7iEBaYC6GF1O7UCC9Ugyc&callback=initMap&v=weekly"
+        defer></script>
+</body>
+
+</html>
